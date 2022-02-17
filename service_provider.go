@@ -4,14 +4,12 @@ import (
 	"github.com/goal-web/contracts"
 )
 
-type Provider func(env contracts.Env) interface{}
-
 type ServiceProvider struct {
 	app             contracts.Application
 	Env             string
 	Paths           []string
 	Sep             string
-	ConfigProviders map[string]Provider
+	ConfigProviders map[string]contracts.ConfigProvider
 }
 
 func (this *ServiceProvider) Stop() {
@@ -30,7 +28,7 @@ func (this *ServiceProvider) Register(application contracts.Application) {
 	})
 
 	application.Singleton("config", func(env contracts.Env) contracts.Config {
-		configInstance := NewConfig(this.Env)
+		configInstance := NewConfig(env, this.ConfigProviders)
 
 		for key, provider := range this.ConfigProviders {
 			configInstance.Set(key, provider(env))
