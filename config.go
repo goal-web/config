@@ -47,6 +47,7 @@ func (this *config) Reload() {
 }
 
 func (this *config) Merge(key string, config contracts.Config) {
+	this.fields[key] = config.Fields()
 	this.configs[key] = config
 }
 
@@ -58,13 +59,13 @@ func (this *config) Set(key string, value interface{}) {
 
 func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
 	this.writeMutex.RLock()
-	defer func() {
-		this.writeMutex.RUnlock()
-	}()
+	defer this.writeMutex.RUnlock()
 
 	// 环境变量优先级最高
-	if envValue := this.Env.GetString(key); envValue != "" {
-		return envValue
+	if this.Env != nil {
+		if envValue := this.Env.GetString(key); envValue != "" {
+			return envValue
+		}
 	}
 
 	if field, existsField := this.fields[key]; existsField {
@@ -72,18 +73,22 @@ func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
 	}
 
 	// 尝试获取 fields
-	fields := contracts.Fields{}
-	prefix := key + "."
+	var (
+		fields = contracts.Fields{}
+		prefix = key + "."
+	)
+
 	for fieldKey, fieldValue := range this.fields {
 		if strings.HasPrefix(fieldKey, prefix) {
 			fields[strings.Replace(fieldKey, prefix, "", 1)] = fieldValue
 		}
 	}
+
 	if len(fields) > 0 {
 		return fields
 	}
 
-	keys := strings.Split(key, ".")
+	var keys = strings.Split(key, ".")
 
 	if len(keys) > 1 {
 		if subConfig, existsSubConfig := this.configs[keys[0]]; existsSubConfig {
