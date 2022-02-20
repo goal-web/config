@@ -4,6 +4,16 @@ import (
 	"github.com/goal-web/contracts"
 )
 
+func Service(env, path string, config map[string]contracts.ConfigProvider) contracts.ServiceProvider {
+	return &ServiceProvider{
+		app:             nil,
+		Env:             env,
+		Paths:           []string{path},
+		Sep:             "=",
+		ConfigProviders: config,
+	}
+}
+
 type ServiceProvider struct {
 	app             contracts.Application
 	Env             string
