@@ -30,28 +30,28 @@ func NewEnv(paths []string, sep string) contracts.Env {
 	return provider
 }
 
-func (this *envProvider) Fields() contracts.Fields {
-	if this.fields != nil {
-		return this.fields
+func (provider *envProvider) Fields() contracts.Fields {
+	if provider.fields != nil {
+		return provider.fields
 	}
 
-	this.fields = this.Load()
+	provider.fields = provider.Load()
 
-	return this.fields
+	return provider.fields
 }
 
-func (this *envProvider) Load() contracts.Fields {
+func (provider *envProvider) Load() contracts.Fields {
 	var (
 		files  []string
 		fields = make(contracts.Fields)
 	)
-	for _, path := range this.Paths {
+	for _, path := range provider.Paths {
 		tmpFiles, _ := filepath.Glob(path + "/*.env")
 		files = append(files, tmpFiles...)
 	}
 
 	for _, file := range files {
-		tempFields, _ := utils.LoadEnv(file, utils.StringOr(this.Sep, "="))
+		tempFields, _ := utils.LoadEnv(file, utils.StringOr(provider.Sep, "="))
 		if tempFields["env"] != nil { // 加载成功并且设置了 env
 			newFields := make(contracts.Fields)
 			envValue := tempFields["env"].(string)

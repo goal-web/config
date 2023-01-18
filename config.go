@@ -7,68 +7,60 @@ import (
 	"sync"
 )
 
-func NewConfig(env contracts.Env, providers map[string]contracts.ConfigProvider) contracts.Config {
+func New(env contracts.Env, providers map[string]contracts.ConfigProvider) contracts.Config {
 	return &config{
 		writeMutex: sync.RWMutex{},
 		providers:  providers,
 		Env:        env,
 		fields:     make(contracts.Fields),
-		configs:    make(map[string]contracts.Config, 0),
 	}
 }
 
 func WithFields(fields contracts.Fields) contracts.Config {
 	return &config{
-		fields:  fields,
-		configs: make(map[string]contracts.Config, 0),
+		fields: fields,
 	}
 }
 
 type config struct {
 	writeMutex sync.RWMutex
 	fields     contracts.Fields
-	configs    map[string]contracts.Config
 	providers  map[string]contracts.ConfigProvider
 	contracts.Env
 }
 
-func (this *config) Fields() contracts.Fields {
-	return this.fields
+func (config *config) Fields() contracts.Fields {
+	return config.fields
 }
 
-func (this *config) Load(provider contracts.FieldsProvider) {
-	utils.MergeFields(this.fields, provider.Fields())
+func (config *config) Load(provider contracts.FieldsProvider) {
+	utils.MergeFields(config.fields, provider.Fields())
 }
 
-func (this *config) Reload() {
-	for name, provider := range this.providers {
-		this.Set(name, provider(this.Env))
+func (config *config) Reload() {
+	for name, provider := range config.providers {
+		config.Set(name, provider(config.Env))
 	}
 }
 
-func (this *config) Merge(key string, config contracts.Config) {
-	this.fields[key] = config.Fields()
-	this.configs[key] = config
+func (config *config) Set(key string, value interface{}) {
+	config.writeMutex.Lock()
+	config.fields[key] = value
+	config.writeMutex.Unlock()
 }
 
-func (this *config) Set(key string, value interface{}) {
-	this.writeMutex.Lock()
-	this.fields[key] = value
-	this.writeMutex.Unlock()
-}
-
-func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
-	this.writeMutex.RLock()
-	defer this.writeMutex.RUnlock()
+func (config *config) Get(key string, defaultValue ...interface{}) interface{} {
+	config.writeMutex.RLock()
+	defer config.writeMutex.RUnlock()
 
 	// 环境变量优先级最高
-	if this.Env != nil {
-		if envValue := this.Env.GetString(key); envValue != "" {
+	if config.Env != nil {
+		if envValue := config.Env.GetString(key); envValue != "" {
 			return envValue
 		}
 	}
 
-	if field, existsField := this.fields[key]; existsField {
+	if field, existsField := config.fields[key]; existsField {
 		return field
 	}
 
@@ -78,7 +70,7 @@ func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
 		prefix = key + "."
 	)
 
-	for fieldKey, fieldValue := range this.fields {
+	for fieldKey, fieldValue := range config.fields {
 		if strings.HasPrefix(fieldKey, prefix) {
 			fields[strings.Replace(fieldKey, prefix, "", 1)] = fieldValue
 		}
@@ -88,14 +80,6 @@ func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
 		return fields
 	}
 
-	var keys = strings.Split(key, ".")
-
-	if len(keys) > 1 {
-		if subConfig, existsSubConfig := this.configs[keys[0]]; existsSubConfig {
-			return subConfig.Get(strings.Join(keys[1:], "."), defaultValue...)
-		}
-	}
-
 	if len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
@@ -103,42 +87,38 @@ func (this *config) Get(key string, defaultValue ...interface{}) interface{} {
 	return nil
 }
 
-func (this *config) GetConfig(key string) contracts.Config {
-	return this.configs[key]
-}
-
-func (this *config) GetFields(key string) contracts.Fields {
-	if field, isTypeRight := this.Get(key).(contracts.Fields); isTypeRight {
+func (config *config) GetFields(key string) contracts.Fields {
+	if field, isTypeRight := config.Get(key).(contracts.Fields); isTypeRight {
 		return field
 	}
 
 	return nil
 }
 
-func (this *config) GetString(key string) string {
-	if field, isTypeRight := this.Get(key).(string); isTypeRight {
+func (config *config) GetString(key string) string {
+	if field, isTypeRight := config.Get(key).(string); isTypeRight {
 		return field
 	}
 
 	return ""
 }
 
-func (this *config) GetInt(key string) int {
-	if field := this.Get(key); field != nil {
+func (config *config) GetInt(key string) int {
+	if field := config.Get(key); field != nil {
 		value := utils.ConvertToInt(field, 0)
 		if value != 0 { // 缓存转换结果
-			this.Set(key, value)
+			config.Set(key, value)
 		}
 		return value
 	}
 
 	return 0
 }
-func (this *config) GetInt64(key string) int64 {
-	if field := this.Get(key); field != nil {
+func (config *config) GetInt64(key string) int64 {
+	if field := config.Get(key); field != nil {
 		value := utils.ConvertToInt64(field, 0)
 		if value != 0 { // 缓存转换结果
-			this.Set(key, value)
+			config.Set(key, value)
 		}
 		return value
 	}
@@ -146,27 +126,26 @@ func (this *config) GetInt64(key string) int64 {
 	return 0
 }
 
-func (this *config) Unset(key string) {
-	delete(this.fields, key)
-	delete(this.configs, key)
+func (config *config) Unset(key string) {
+	delete(config.fields, key)
 }
 
-func (this *config) GetFloat(key string) float32 {
-	if field := this.Get(key); field != nil {
+func (config *config) GetFloat(key string) float32 {
+	if field := config.Get(key); field != nil {
 		value := utils.ConvertToFloat(field, 0)
 		if value != 0 { // 缓存转换结果
-			this.Set(key, value)
+			config.Set(key, value)
 		}
 		return value
 	}
 
 	return 0
 }
-func (this *config) GetFloat64(key string) float64 {
-	if field := this.Get(key); field != nil {
+func (config *config) GetFloat64(key string) float64 {
+	if field := config.Get(key); field != nil {
 		value := utils.ConvertToFloat64(field, 0)
 		if value != 0 { // 缓存转换结果
-			this.Set(key, value)
+			config.Set(key, value)
 		}
 		return value
 	}
@@ -174,10 +153,10 @@ func (this *config) GetFloat64(key string) float64 {
 	return 0
 }
 
-func (this *config) GetBool(key string) bool {
-	if field := this.Get(key); field != nil {
+func (config *config) GetBool(key string) bool {
+	if field := config.Get(key); field != nil {
 		result := utils.ConvertToBool(field, false)
-		this.Set(key, result)
+		config.Set(key, result)
 		return result
 	}
 
