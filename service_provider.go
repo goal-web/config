@@ -6,18 +6,14 @@ import (
 
 type serviceProvider struct {
 	app             contracts.Application
-	Env             string
-	Paths           []string
-	Sep             string
+	Env             contracts.Env
 	ConfigProviders map[string]contracts.ConfigProvider
 }
 
-func NewService(env, path string, config map[string]contracts.ConfigProvider) contracts.ServiceProvider {
+func NewService(env contracts.Env, config map[string]contracts.ConfigProvider) contracts.ServiceProvider {
 	return &serviceProvider{
 		app:             nil,
 		Env:             env,
-		Paths:           []string{path},
-		Sep:             "=",
 		ConfigProviders: config,
 	}
 }
@@ -34,7 +30,7 @@ func (provider *serviceProvider) Register(application contracts.Application) {
 	provider.app = application
 
 	application.Singleton("env", func() contracts.Env {
-		return NewEnv(provider.Paths, provider.Sep)
+		return provider.Env
 	})
 
 	application.Singleton("config", func(env contracts.Env) contracts.Config {

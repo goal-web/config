@@ -1,69 +1,41 @@
 package config
 
 import (
-	"fmt"
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports"
 	"github.com/goal-web/supports/utils"
+	"github.com/joho/godotenv"
 	"os"
-	"path/filepath"
 )
 
-type envProvider struct {
+type dotEnvProvider[T any] struct {
 	supports.BaseFields
-	Paths  []string
-	Sep    string
-	fields contracts.Fields
+	providers []EnvProvider
 }
 
-func NewEnv(paths []string, sep string) contracts.Env {
-	provider := &envProvider{
-		BaseFields: supports.BaseFields{Getter: func(key string) interface{} {
+func NewDotEnv(providers ...EnvProvider) contracts.Env {
+	provider := &dotEnvProvider[any]{
+		BaseFields: supports.BaseFields{Getter: func(key string) any {
 			return os.Getenv(key)
 		}},
-		Paths:  paths,
-		Sep:    sep,
-		fields: nil,
+		providers: providers,
 	}
 
 	provider.BaseFields.FieldsProvider = provider
 	return provider
 }
 
-func (provider *envProvider) Fields() contracts.Fields {
-	if provider.fields != nil {
-		return provider.fields
-	}
+func (env *dotEnvProvider[T]) Load() contracts.Fields {
+	var envs = make(contracts.Fields)
+	for _, provider := range env.providers {
 
-	provider.fields = provider.Load()
-
-	return provider.fields
-}
-
-func (provider *envProvider) Load() contracts.Fields {
-	var (
-		files  []string
-		fields = make(contracts.Fields)
-	)
-	for _, path := range provider.Paths {
-		tmpFiles, _ := filepath.Glob(path + "/*.env")
-		files = append(files, tmpFiles...)
-	}
-
-	for _, file := range files {
-		tempFields, _ := utils.LoadEnv(file, utils.StringOr(provider.Sep, "="))
-		if tempFields["env"] != nil { // 加载成功并且设置了 env
-			newFields := make(contracts.Fields)
-			envValue := tempFields["env"].(string)
-			for key, field := range tempFields {
-				if key != "env" {
-					newFields[fmt.Sprintf("%s:%s", envValue, key)] = field
-				}
-			}
-			tempFields = newFields
+		strFields, err := godotenv.UnmarshalBytes(provider())
+		if err != nil {
+			log.Error("tomlEnv.load: " + err.Error())
+			continue
 		}
-		utils.MergeFields(fields, tempFields)
+		fields, _ := utils.ToFields(strFields)
+		utils.Flatten(envs, fields, ".")
 	}
-
-	return fields
+	return envs
 }
