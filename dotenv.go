@@ -8,15 +8,19 @@ import (
 	"os"
 )
 
-type dotEnvProvider[T any] struct {
+type dotEnv[T any] struct {
 	supports.BaseFields
 	providers []EnvProvider
+	fields    contracts.Fields
 }
 
 func NewDotEnv(providers ...EnvProvider) contracts.Env {
-	provider := &dotEnvProvider[any]{
-		BaseFields: supports.BaseFields{Getter: func(key string) any {
-			return os.Getenv(key)
+	provider := &dotEnv[any]{
+		BaseFields: supports.BaseFields{OptionalGetter: func(key string, defaultValue any) any {
+			if value, ok := os.LookupEnv(key); ok {
+				return value
+			}
+			return defaultValue
 		}},
 		providers: providers,
 	}
@@ -25,7 +29,15 @@ func NewDotEnv(providers ...EnvProvider) contracts.Env {
 	return provider
 }
 
-func (env *dotEnvProvider[T]) Load() contracts.Fields {
+func (env *dotEnv[T]) Fields() contracts.Fields {
+	if env.fields == nil {
+		env.fields = env.Load()
+	}
+
+	return env.fields
+}
+
+func (env *dotEnv[T]) Load() contracts.Fields {
 	var envs = make(contracts.Fields)
 	for _, provider := range env.providers {
 

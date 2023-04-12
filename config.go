@@ -56,9 +56,11 @@ func (config *config) Get(key string) any {
 		return field
 	}
 
-	return nil
+	return config.Env.Get(key)
 }
 
 func (config *config) Unset(key string) {
+	config.writeMutex.Lock()
 	delete(config.fields, key)
+	config.writeMutex.Unlock()
 }
