@@ -2,17 +2,16 @@ package config
 
 import (
 	"github.com/goal-web/contracts"
+	"github.com/goal-web/supports/logs"
 )
 
 type serviceProvider struct {
-	app             contracts.Application
 	Env             contracts.Env
 	ConfigProviders map[string]contracts.ConfigProvider
 }
 
 func NewService(env contracts.Env, config map[string]contracts.ConfigProvider) contracts.ServiceProvider {
 	return &serviceProvider{
-		app:             nil,
 		Env:             env,
 		ConfigProviders: config,
 	}
@@ -27,7 +26,7 @@ func (provider *serviceProvider) Start() error {
 }
 
 func (provider *serviceProvider) Register(application contracts.Application) {
-	provider.app = application
+	logs.Debug = application.Debug()
 
 	application.Singleton("env", func() contracts.Env {
 		return provider.Env
