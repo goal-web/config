@@ -8,15 +8,28 @@ import (
 )
 
 func TestToml(t *testing.T) {
-	toml := config.NewToml(config.File("env.toml"))
-	var fields = toml.Load()
+	env := config.NewToml(config.File("config.toml"))
+	var fields = env.Load()
 	fmt.Println(fields)
 	assert.NotNil(t, fields)
+	conf := config.New(env, nil)
+	assert.True(t, conf.GetBool("app.debug"))
+}
+
+func TestYaml(t *testing.T) {
+	env := config.NewYaml(config.File("config.yaml"))
+	var fields = env.Load()
+	fmt.Println(fields)
+	assert.NotNil(t, fields)
+	conf := config.New(env, nil)
+	assert.True(t, conf.GetBool("app.debug"))
 }
 
 func TestDotEnv(t *testing.T) {
-	toml := config.NewDotEnv(config.File("env.env"))
-	var fields = toml.Load()
+	env := config.NewDotEnv(config.File("config.env"))
+	var fields = env.Load()
 	fmt.Println(fields)
 	assert.NotNil(t, fields)
+	conf := config.New(env, nil)
+	assert.True(t, conf.GetBool("app.debug"))
 }

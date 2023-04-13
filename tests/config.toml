@@ -3,7 +3,7 @@
 name = "goal"
 key = "dQcxsKvBZKNfWivwnhKlDwvseguknBZPEiiDRQlIatjKLLpbzK"
 env = "local"
-id = ["local", "ll"]
+debug = true
 
 [db.pgsql]
 host = "localhost"

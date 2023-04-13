@@ -8,14 +8,14 @@ import (
 	"os"
 )
 
-type tomlEnv[T any] struct {
+type tomlEnv struct {
 	supports.BaseFields
 	providers []EnvProvider
 	fields    contracts.Fields
 }
 
 func NewToml(providers ...EnvProvider) contracts.Env {
-	provider := &tomlEnv[any]{
+	provider := &tomlEnv{
 		BaseFields: supports.BaseFields{OptionalGetter: func(key string, defaultValue any) any {
 			if value, ok := os.LookupEnv(key); ok {
 				return value
@@ -28,7 +28,7 @@ func NewToml(providers ...EnvProvider) contracts.Env {
 	provider.BaseFields.FieldsProvider = provider
 	return provider
 }
-func (env *tomlEnv[T]) Fields() contracts.Fields {
+func (env *tomlEnv) Fields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}
@@ -36,7 +36,7 @@ func (env *tomlEnv[T]) Fields() contracts.Fields {
 	return env.fields
 }
 
-func (env *tomlEnv[T]) Load() contracts.Fields {
+func (env *tomlEnv) Load() contracts.Fields {
 	var envs = make(contracts.Fields)
 	for _, provider := range env.providers {
 

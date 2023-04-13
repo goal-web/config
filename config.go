@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/goal-web/contracts"
-	"github.com/goal-web/supports/utils"
 	"sync"
 )
 
@@ -16,9 +15,7 @@ func New(env contracts.Env, providers map[string]contracts.ConfigProvider) contr
 }
 
 func WithFields(fields contracts.Fields) contracts.Config {
-	return &config{
-		fields: fields,
-	}
+	return &config{fields: fields}
 }
 
 type config struct {
@@ -30,10 +27,6 @@ type config struct {
 
 func (config *config) Fields() contracts.Fields {
 	return config.fields
-}
-
-func (config *config) Load(provider contracts.FieldsProvider) {
-	utils.MergeFields(config.fields, provider.Fields())
 }
 
 func (config *config) Reload() {
@@ -56,6 +49,9 @@ func (config *config) Get(key string) any {
 		return field
 	}
 
+	if config.Env == nil {
+		return nil
+	}
 	return config.Env.Get(key)
 }
 
