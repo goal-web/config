@@ -5,8 +5,6 @@ import (
 	"github.com/goal-web/supports"
 	"github.com/goal-web/supports/utils"
 	"gopkg.in/yaml.v3"
-
-	"os"
 )
 
 type yamlEnv struct {
@@ -17,13 +15,8 @@ type yamlEnv struct {
 
 func NewYaml(providers ...EnvProvider) contracts.Env {
 	provider := &yamlEnv{
-		BaseFields: supports.BaseFields{OptionalGetter: func(key string, defaultValue any) any {
-			if value, ok := os.LookupEnv(key); ok {
-				return value
-			}
-			return defaultValue
-		}},
-		providers: providers,
+		BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+		providers:  providers,
 	}
 
 	provider.BaseFields.FieldsProvider = provider

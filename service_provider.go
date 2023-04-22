@@ -32,12 +32,13 @@ func (provider *serviceProvider) Register(application contracts.Application) {
 		return provider.Env
 	})
 
-	application.Singleton("config", func(env contracts.Env) contracts.Config {
-		configInstance := New(env, provider.ConfigProviders)
+	singleton = New(provider.Env, provider.ConfigProviders)
 
-		for key, provider := range provider.ConfigProviders {
-			configInstance.Set(key, provider(env))
-		}
-		return configInstance
+	for key, driver := range provider.ConfigProviders {
+		singleton.Set(key, driver(provider.Env))
+	}
+
+	application.Singleton("config", func() contracts.Config {
+		return singleton
 	})
 }

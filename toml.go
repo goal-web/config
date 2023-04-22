@@ -5,7 +5,6 @@ import (
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports"
 	"github.com/goal-web/supports/utils"
-	"os"
 )
 
 type tomlEnv struct {
@@ -16,13 +15,8 @@ type tomlEnv struct {
 
 func NewToml(providers ...EnvProvider) contracts.Env {
 	provider := &tomlEnv{
-		BaseFields: supports.BaseFields{OptionalGetter: func(key string, defaultValue any) any {
-			if value, ok := os.LookupEnv(key); ok {
-				return value
-			}
-			return defaultValue
-		}},
-		providers: providers,
+		BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+		providers:  providers,
 	}
 
 	provider.BaseFields.FieldsProvider = provider
