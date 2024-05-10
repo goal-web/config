@@ -10,7 +10,7 @@ import (
 )
 
 func TestToml(t *testing.T) {
-	env := config.NewToml(config.File("config.toml"))
+	env := config.NewToml(config.File("env.toml"))
 	var fields = env.Load()
 	fmt.Println(fields)
 	assert.NotNil(t, fields)
@@ -42,7 +42,7 @@ func TestOsEnvGetter(t *testing.T) {
 	assert.Equal(t, osEnvKey, "APP_ENV")
 	err := os.Setenv("APP_ENV", "testing")
 	assert.NoError(t, err, err)
-	env := config.NewToml(config.File("config.toml"))
+	env := config.NewToml(config.File("env.toml"))
 	var fields = env.Load()
 	assert.NotNil(t, fields)
 	conf := config.New(env, nil)
