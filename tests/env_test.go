@@ -19,7 +19,7 @@ func TestToml(t *testing.T) {
 }
 
 func TestYaml(t *testing.T) {
-	env := config.NewYaml(config.File("config.yaml"))
+	env := config.NewYaml(config.File("env.yaml"))
 	var fields = env.Load()
 	fmt.Println(fields)
 	assert.NotNil(t, fields)
