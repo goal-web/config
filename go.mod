@@ -4,8 +4,6 @@ go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/goal-web/contracts v0.3.0
-	github.com/goal-web/supports v0.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
