@@ -9,11 +9,11 @@ import (
 	"os"
 )
 
-func EncryptionCommand(app contracts.Application) contracts.Command {
-	return &encryptionCommand{
-		app:     app,
-		Command: commands.Base("env {action:encrypt or decrypt} --{driver?} --{in?} --{out} --{key?} --{force?}", "env"),
-	}
+func EncryptionCommand() (contracts.Command, contracts.CommandHandlerProvider) {
+	return commands.Base("env {action:encrypt or decrypt} --{driver?} --{in?} --{out} --{key?} --{force?}", "env"),
+		func(app contracts.Application) contracts.CommandHandler {
+			return &encryptionCommand{app: app}
+		}
 }
 
 type encryptionCommand struct {
