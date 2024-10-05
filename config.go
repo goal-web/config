@@ -25,7 +25,7 @@ type config struct {
 	contracts.Env
 }
 
-func (config *config) Fields() contracts.Fields {
+func (config *config) ToFields() contracts.Fields {
 	return config.fields
 }
 

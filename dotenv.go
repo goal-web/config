@@ -23,7 +23,7 @@ func NewDotEnv(providers ...EnvProvider) contracts.Env {
 	return provider
 }
 
-func (env *dotEnv) Fields() contracts.Fields {
+func (env *dotEnv) ToFields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}

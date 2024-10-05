@@ -22,7 +22,7 @@ func NewYaml(providers ...EnvProvider) contracts.Env {
 	provider.BaseFields.FieldsProvider = provider
 	return provider
 }
-func (env *yamlEnv) Fields() contracts.Fields {
+func (env *yamlEnv) ToFields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}

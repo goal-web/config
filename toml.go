@@ -22,7 +22,7 @@ func NewToml(providers ...EnvProvider) contracts.Env {
 	provider.BaseFields.FieldsProvider = provider
 	return provider
 }
-func (env *tomlEnv) Fields() contracts.Fields {
+func (env *tomlEnv) ToFields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}
