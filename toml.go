@@ -19,7 +19,7 @@ func NewToml(providers ...EnvProvider) contracts.Env {
 		providers:  providers,
 	}
 
-	provider.BaseFields.FieldsProvider = provider
+	provider.BaseFields.Provider = provider
 	return provider
 }
 func (env *tomlEnv) ToFields() contracts.Fields {

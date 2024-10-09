@@ -19,7 +19,7 @@ func NewDotEnv(providers ...EnvProvider) contracts.Env {
 		providers:  providers,
 	}
 
-	provider.BaseFields.FieldsProvider = provider
+	provider.BaseFields.Provider = provider
 	return provider
 }
 
