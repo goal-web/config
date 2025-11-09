@@ -2,11 +2,11 @@ package tests
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/goal-web/config"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"strings"
-	"testing"
 )
 
 func TestToml(t *testing.T) {
@@ -34,11 +34,13 @@ func TestDotEnv(t *testing.T) {
 	assert.NotNil(t, fields)
 	conf := config.New(env, nil)
 	assert.True(t, conf.GetBool("app.debug"))
+	assert.Equal(t, conf.GetString("app.name"), "goal")
+	assert.Equal(t, conf.GetString("APP_NAMe"), "goal")
 }
 
 func TestOsEnvGetter(t *testing.T) {
 	key := "app.env"
-	osEnvKey := strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+	osEnvKey := config.ToEnvKey(key)
 	assert.Equal(t, osEnvKey, "APP_ENV")
 	err := os.Setenv("APP_ENV", "testing")
 	assert.NoError(t, err, err)

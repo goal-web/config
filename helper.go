@@ -5,8 +5,13 @@ import (
 	"strings"
 )
 
+// ToEnvKey 将 key 转换为大写，并将 . 替换为 _
+func ToEnvKey(key string) string {
+	return strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+}
+
 func osEnvGetter(key string, defaultValue any) any {
-	if value, ok := os.LookupEnv(strings.ToUpper(strings.ReplaceAll(key, ".", "_"))); ok {
+	if value, ok := os.LookupEnv(ToEnvKey(key)); ok {
 		return value
 	}
 	return defaultValue

@@ -1,9 +1,10 @@
 package config
 
 import (
+	"os"
+
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports"
-	"github.com/goal-web/supports/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -40,8 +41,17 @@ func (env *dotEnv) Load() contracts.Fields {
 			log.Error("tomlEnv.load: " + err.Error())
 			continue
 		}
-		fields, _ := utils.ToFields(strFields)
-		utils.Flatten(envs, fields, ".")
+		for key, value := range strFields {
+			key = ToEnvKey(key)
+			if _, exists := os.LookupEnv(key); exists {
+				continue
+			}
+			err = os.Setenv(key, value)
+			if err != nil {
+				log.Error("dotEnv.load: " + err.Error())
+				continue
+			}
+		}
 	}
 	return envs
 }
