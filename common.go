@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/goal-web/supports/logs"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/goal-web/supports/logs"
 )
 
 type EnvProvider func() []byte
