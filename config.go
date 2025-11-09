@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/goal-web/contracts"
 	"sync"
+
+	"github.com/goal-web/contracts"
 )
 
 func New(env contracts.Env, providers map[string]contracts.ConfigProvider) contracts.Config {
