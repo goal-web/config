@@ -250,7 +250,7 @@ import (
 )
 
 func main() {
-    app := application.New()
+    app := application.Default()
     app.RegisterService(
         config.NewService(
             config.NewToml(config.File("env.toml")),
@@ -273,6 +273,55 @@ func main() {
 
         fmt.Printf("name=%s, cost=%d, debug=%t, salt=%s\n", name, cost, debug, salt)
     })
+}
+```
+
+### 单例（Singleton）用法
+
+当应用使用 `application.Default()` 并注册了配置服务后，可以直接使用 `config` 包的单例方法（见 `config/singleton.go`），无需在代码中显式传递 `contracts.Config`。
+
+可用的单例方法包括：
+- `config.Default()`：获取配置单例
+- `config.Get(key)` / `config.Set(key, value)` / `config.Unset(key)`
+- `config.Reload()`：根据注册的 `ConfigProvider` 重新加载配置
+- 类型化辅助：`config.GetString`、`config.GetBool`、`config.IntOptional`、`config.StringOptional` 等（见 `helper.go`）
+
+示例：
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/goal-web/application"
+    "github.com/goal-web/config"
+    "github.com/goal-web/contracts"
+)
+
+func main() {
+    app := application.New()
+    app.RegisterService(
+        config.NewService(
+            config.NewToml(config.File("env.toml")),
+            map[string]contracts.ConfigProvider{},
+        ),
+    )
+
+    // 假设此时应用作为默认应用运行（例如框架启动流程中已设置）
+    // 可直接使用包级单例方法
+    env := config.GetString("app.env")
+    debug := config.GetBool("app.debug")
+
+    // 写入/覆盖某个键
+    config.Set("feature.toggle", true)
+
+    // 重新加载已注册的配置提供器（文件/URL 等）
+    config.Reload()
+
+    // 删除一个键
+    config.Unset("db.pgsql.password")
+
+    fmt.Printf("env=%s, debug=%t\n", env, debug)
 }
 ```
 
