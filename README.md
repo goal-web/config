@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](../goal/LICENSE)
 ![GitHub Stars](https://img.shields.io/github/stars/goal-web/config?style=social)
 ![Release](https://img.shields.io/github/v/release/goal-web/config?include_prereleases)
-![Go Version](https://img.shields.io/badge/go-%3E=%201.20-00ADD8?logo=go)
+![Go Version](https://img.shields.io/badge/go-%3E=%201.25.0-00ADD8?logo=go)
 
 [Docs](https://pkg.go.dev/github.com/goal-web/config) · [Issues](https://github.com/goal-web/config/issues) · [Releases](https://github.com/goal-web/config/releases) · [CLI Encryption](#cli-encryption) · [中文文档](./README.cn.md)
 
@@ -21,7 +21,7 @@ Goal Config provides configuration loading from files (TOML, YAML, DotEnv) and e
 
 ## Compatibility
 
-- Go `>= 1.20`
+- Go `>= 1.25.0`
 - Module path: `github.com/goal-web/config`
 
 ## Table of Contents

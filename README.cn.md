@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](../goal/LICENSE)
 ![GitHub Stars](https://img.shields.io/github/stars/goal-web/config?style=social)
 ![Release](https://img.shields.io/github/v/release/goal-web/config?include_prereleases)
-![Go Version](https://img.shields.io/badge/go-%3E=%201.20-00ADD8?logo=go)
+![Go Version](https://img.shields.io/badge/go-%3E=%201.25.0-00ADD8?logo=go)
 
 [Docs](https://pkg.go.dev/github.com/goal-web/config) · [Issues](https://github.com/goal-web/config/issues) · [Releases](https://github.com/goal-web/config/releases) · [CLI 加密](#cli-加密命令)
 
@@ -21,7 +21,7 @@ Goal 配置组件，支持从文件（TOML、YAML、DotEnv）和环境变量中�
 
 ## 兼容性
 
-- Go `>= 1.20`
+- Go `>= 1.25.0`
 - 模块路径：`github.com/goal-web/config`
 
 ## 目录
@@ -459,4 +459,3 @@ fmt.Println(conf.GetString("app.env")) // 输出: testing
 1. **文件格式支持**：内置支持 TOML、YAML 和 DotEnv。你可以通过实现 `contracts.Env` 接口扩展其他来源或处理流程（例如自定义拉取、预处理等）。
 2. **动态加载**：应用启动时初始化配置；若运行期修改文件或远程源，可显式调用 `config.Reload()` 重新计算并生效（环境变量始终优先）。
 3. **类型安全**：使用 `GetBool`、`GetString` 等方法确保类型安全。
-
