@@ -1,16 +1,55 @@
 # Goal-Config
 
-Goal 配置组件，支持从文件（TOML、YAML、DotEnv）和环境变量中加载配置，并自动合并优先级。
+[![Go Reference](https://pkg.go.dev/badge/github.com/goal-web/config.svg)](https://pkg.go.dev/github.com/goal-web/config)
+[![Go Report Card](https://goreportcard.com/badge/github.com/goal-web/config)](https://goreportcard.com/report/github.com/goal-web/config)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](../goal/LICENSE)
+![GitHub Stars](https://img.shields.io/github/stars/goal-web/config?style=social)
+![Release](https://img.shields.io/github/v/release/goal-web/config?include_prereleases)
+![Go Version](https://img.shields.io/badge/go-%3E=%201.20-00ADD8?logo=go)
 
-## 安装
+[Docs](https://pkg.go.dev/github.com/goal-web/config) · [Issues](https://github.com/goal-web/config/issues) · [Releases](https://github.com/goal-web/config/releases) · [CLI Encryption](#cli-encryption) · [中文文档](./README.cn.md)
+
+Goal Config provides configuration loading from files (TOML, YAML, DotEnv) and environment variables, with automatic merging and clear precedence.
+
+## Highlights
+
+- Multi-source merge: local files and remote URLs can be composed; later sources override earlier ones.
+- Environment-first: OS environment variables have the highest precedence.
+- Type-safe: typed getters and optional variants avoid implicit conversions.
+- Thread-safe: RW locks for reads/writes; runtime-safe `Set/Reload/Unset`.
+- Pluggable: implement `contracts.Env` to extend sources and preprocessing.
+
+## Compatibility
+
+- Go `>= 1.20`
+- Module path: `github.com/goal-web/config`
+
+## Table of Contents
+
+- Installation
+- Quick Start
+- Supported Formats
+- Config Priority
+- Key Naming Rules
+- Example Configs & Env Examples
+- Reading Config
+- Optional Getters
+- Singleton Usage
+- Combining Sources
+- Env Override Example
+- Error Handling & Diagnostics
+- CLI Encryption
+- Notes
+
+## Installation
 
 ```shell
 go get github.com/goal-web/config
 ```
 
-## 快速开始
+## Quick Start
 
-### 基本用法
+### Basic usage
 
 ```go
 package main
@@ -23,17 +62,17 @@ import (
 )
 
 func main() {
-    app := application.New()
+    app := application.Default()
 
-    // 注册配置服务
+    // register config service
     app.RegisterService(
         config.NewService(
-            config.NewToml(config.File("env.toml")), // 加载 TOML 文件
-            map[string]contracts.ConfigProvider{},  // 自定义配置提供器（可选）
+            config.NewToml(config.File("env.toml")),
+            map[string]contracts.ConfigProvider{},
         ),
     )
 
-	// 使用配置
+    // use config
 	app.Call(func(conf contracts.Config) {
 		debug := conf.GetBool("app.debug")
 		if debug {
@@ -43,20 +82,20 @@ func main() {
 }
 ```
 
-### 支持的文件格式
+### Supported Formats
 
-- TOML：使用 `config.NewToml(...)`
-- YAML：使用 `config.NewYaml(...)`
-- DotEnv（`.env`/键值对）：使用 `config.NewDotEnv(...)`
+- TOML: `config.NewToml(...)`
+- YAML: `config.NewYaml(...)`
+- DotEnv (`.env` key-value): `config.NewDotEnv(...)`
 
-以上三种均可通过以下两类提供器读取源数据：
-- `config.File(path)`：从本地文件加载
-- `config.Url(url)`：从远程地址加载
+Sources for all formats:
+- `config.File(path)`: load from local file
+- `config.Url(url)`: load from remote URL
 
-示例：
+Examples:
 
 ```go
-// 使用 YAML 文件
+// YAML file
 app.RegisterService(
     config.NewService(
         config.NewYaml(config.File("env.yaml")),
@@ -64,7 +103,7 @@ app.RegisterService(
     ),
 )
 
-// 使用 DotEnv 文件
+// DotEnv file
 app.RegisterService(
     config.NewService(
         config.NewDotEnv(config.File("config.env")),
@@ -72,7 +111,7 @@ app.RegisterService(
     ),
 )
 
-// 从 URL 加载（示例：TOML）
+// Load from URL (TOML)
 app.RegisterService(
     config.NewService(
         config.NewToml(config.Url("https://example.com/env.toml")),
@@ -81,25 +120,25 @@ app.RegisterService(
 )
 ```
 
-### 配置优先级
+### Config Priority
 
-配置的加载优先级如下：
-1. **环境变量**：最高优先级。
-2. **配置文件**：次优先级（如 `env.toml`、`env.yaml`、`.env`）。
-3. **默认值**：最低优先级（通过代码设置）。
+Precedence:
+1. Environment variables (highest)
+2. Config files (e.g. `env.toml`, `env.yaml`, `.env`)
+3. Defaults (set in code)
 
-#### 环境变量命名规则
+#### Key Naming Rules for Env
 
-- 将配置键中的 `.` 替换为 `_`。
-- 转换为大写字母。
+- Replace `.` with `_` in keys
+- Uppercase letters
 
-例如：
-- 配置键 `app.debug` 对应的环境变量为 `APP_DEBUG`。
-- 配置键 `database.host` 对应的环境变量为 `DATABASE_HOST`。
+Examples:
+- `app.debug` → `APP_DEBUG`
+- `database.host` → `DATABASE_HOST`
 
-### 示例配置
+### Example Configs
 
-#### `env.toml` 文件示例（完整示例）
+#### `env.toml`
 
 ```toml
 [app]
@@ -116,7 +155,7 @@ username = "postgres"
 password = 123456
 ```
 
-#### `env.yaml` 文件示例（完整示例）
+#### `env.yaml`
 
 ```yaml
 app:
@@ -133,7 +172,7 @@ db:
     password: 123456
 ```
 
-#### `.env`/`config.env` 文件示例（完整示例，键值对）
+#### `.env` / `config.env`
 
 ```env
 # 注释
@@ -202,42 +241,42 @@ SESSION_ID=goal
 SESSION_NAME=goal_session:
 ```
 
-#### 环境变量示例
+#### Env examples
 
 ```shell
 export APP_DEBUG=true
 export DATABASE_HOST=mysql.example.com
 ```
 
-### 读取配置示例
+### Reading Config
 
 ```go
 app.Call(func(conf contracts.Config) {
-    // 布尔值
+    // booleans
     debug := conf.GetBool("app.debug")
 
-    // 基本类型
+    // primitives
     env := conf.GetString("app.env")
     port := conf.GetInt("db.pgsql.port")
 
-    // 嵌套键（点号展开）
+    // nested keys (dot notation)
     host := conf.GetString("db.pgsql.host")
 
     fmt.Printf("env=%s, debug=%t, db=%s:%d\n", env, debug, host, port)
 })
 ```
 
-### 可选配置获取方法
+### Optional Getters
 
-当某个配置键不存在时，可以使用可选获取方法提供默认值。这些方法的优先级与普通获取一致：环境变量 > 配置文件 > 默认值。
+When a key is missing, optional getters provide defaults. Same precedence: env > files > defaults.
 
-常用方法包括：
+Common methods:
 - `StringOptional(key, default)`
 - `IntOptional(key, default)` / `Int64Optional` / `UIntOptional` 等
 - `BoolOptional(key, default)`
 - `FloatOptional(key, default)` / `Float64Optional`
 
-用法示例：
+Example:
 
 ```go
 package main
@@ -259,16 +298,16 @@ func main() {
     )
 
     app.Call(func(conf contracts.Config) {
-        // 如果 app.name 不存在，则返回默认值 "goal"
+        // default if app.name missing
         name := conf.StringOptional("app.name", "goal")
 
-        // 如果 hashing.cost 不存在，则返回默认值 10
+        // default if hashing.cost missing
         cost := conf.IntOptional("hashing.cost", 10)
 
-        // 可选布尔值
+        // optional boolean
         debug := conf.BoolOptional("app.debug", false)
 
-        // 包级函数也可用（读取默认 config 单例）
+        // package-level helpers work with singleton
         salt := config.StringOptional("hashing.salt", "default_salt")
 
         fmt.Printf("name=%s, cost=%d, debug=%t, salt=%s\n", name, cost, debug, salt)
@@ -276,17 +315,17 @@ func main() {
 }
 ```
 
-### 单例（Singleton）用法
+### Singleton Usage
 
-当应用使用 `application.Default()` 并注册了配置服务后，可以直接使用 `config` 包的单例方法（见 `config/singleton.go`），无需在代码中显式传递 `contracts.Config`。
+With `application.Default()` and config service registered, you can use package-level singleton helpers (see `config/singleton.go`) without passing `contracts.Config` explicitly.
 
-可用的单例方法包括：
+Available helpers:
 - `config.Default()`：获取配置单例
 - `config.Get(key)` / `config.Set(key, value)` / `config.Unset(key)`
 - `config.Reload()`：根据注册的 `ConfigProvider` 重新加载配置
-- 类型化辅助：`config.GetString`、`config.GetBool`、`config.IntOptional`、`config.StringOptional` 等（见 `helper.go`）
+- Typed helpers: `config.GetString`, `config.GetBool`, `config.IntOptional`, `config.StringOptional` (see `helper.go`)
 
-示例：
+Example:
 
 ```go
 package main
@@ -299,7 +338,7 @@ import (
 )
 
 func main() {
-    app := application.New()
+    app := application.Default()
     app.RegisterService(
         config.NewService(
             config.NewToml(config.File("env.toml")),
@@ -307,30 +346,29 @@ func main() {
         ),
     )
 
-    // 假设此时应用作为默认应用运行（例如框架启动流程中已设置）
-    // 可直接使用包级单例方法
+    // use package-level singleton methods
     env := config.GetString("app.env")
     debug := config.GetBool("app.debug")
 
-    // 写入/覆盖某个键
+    // set/override
     config.Set("feature.toggle", true)
 
-    // 重新加载已注册的配置提供器（文件/URL 等）
+    // reload registered providers (files/URL)
     config.Reload()
 
-    // 删除一个键
+    // unset a key
     config.Unset("db.pgsql.password")
 
     fmt.Printf("env=%s, debug=%t\n", env, debug)
 }
 ```
 
-### 组合多个数据源
+### Combining Multiple Sources
 
 ```go
 app.RegisterService(
     config.NewService(
-        // 依次加载并合并（后者可覆盖前者同名键）
+        // merge in order (later overrides earlier)
         config.NewToml(
             config.File("env.toml"),
             config.Url("https://example.com/override.toml"),
@@ -340,18 +378,83 @@ app.RegisterService(
 )
 ```
 
-### 环境变量覆盖示例
+### Error Handling & Diagnostics
+
+- File read errors: `File(path)` logs debug and returns empty bytes; parser skips this source.
+- Remote URL errors: `Url(url)` logs debug and returns `nil`.
+- Parse errors: TOML/YAML/DotEnv errors are logged; other sources continue.
+- Key conflicts: later sources override earlier; env takes highest precedence.
+- Type mismatch: use typed getters like `GetBool`, `GetInt`.
+
+### CLI Encryption
+
+Encrypt/decrypt config files via CLI to avoid plaintext secrets.
+
+Commands:
+
+```shell
+# Encrypt .env to .env.encrypted (AES, auto-generate key)
+goal env encrypt --in .env --out .env.encrypted
+
+# Encrypt with specified key/driver
+goal env encrypt --driver AES --key "your-32-characters-key" --in .env --out .env.encrypted
+
+# Decrypt .env.encrypted to .env (use --force to overwrite)
+goal env decrypt --in .env.encrypted --out .env --key "your-32-characters-key" --force
+```
+
+Notes:
+- If `--key` missing, a 32-char key is generated and logged.
+- Use `--driver` to select encryption driver (default `AES`).
+- `--force` overwrites target on decrypt.
+
+### Env Override Example
 
 ```go
-// 将 app.env 的值覆盖为 testing（优先级最高）
+// override app.env via OS env (highest precedence)
 os.Setenv("APP_ENV", "testing")
 env := config.NewToml(config.File("env.toml"))
 conf := config.New(env, nil)
-fmt.Println(conf.GetString("app.env")) // 输出: testing
+fmt.Println(conf.GetString("app.env")) // prints: testing
 ```
 
-### 注意事项
+## Star History
 
-1. **文件格式支持**：内置支持 TOML、YAML 和 DotEnv。你可以通过实现 `contracts.Env` 接口扩展其他来源或处理流程（例如自定义拉取、预处理等）。
-2. **动态加载**：配置在应用启动时加载，运行时修改文件或环境变量需重启应用生效。
-3. **类型安全**：使用 `GetBool`、`GetString` 等方法确保类型安全。
+<a href="https://star-history.com/#goal-web/config&Date"><img src="https://api.star-history.com/svg?repos=goal-web/config&type=Date" alt="Star History Chart"/></a>
+
+![Stargazers over time](https://starchart.cc/goal-web/config.svg)
+
+## Contributing
+
+- Issues and PRs are welcome. Please:
+  - Keep API backward compatible.
+  - Update docs/examples; document behavioral changes in Notes/FAQ.
+  - Build and run basic tests before submitting.
+- Use Issues or Discussions (if enabled) for proposals.
+
+## Roadmap
+
+- Module docs matrix for `goal/config` and `goal-cli/config`.
+- Example app and smoke tests for combined sources.
+- English/Chinese docs maintained.
+
+## Changelog
+
+- See Releases: <https://github.com/goal-web/config/releases>
+
+## Security
+
+- Do not commit secrets; prefer env vars or CLI encryption.
+- Env vars have highest precedence; ideal for CI/containers.
+- Encrypt production configs; decrypt at deploy. See CLI.
+
+## FAQ
+
+- File/URL load failures are logged and skipped; other sources continue.
+- Override order: later sources win; env is highest.
+- Use typed getters to avoid implicit conversions.
+### Notes
+
+1. Formats: built-in TOML/YAML/DotEnv; implement `contracts.Env` for custom sources.
+2. Dynamic reload: call `config.Reload()` to re-compute sources at runtime; env stays highest.
+3. Type-safety: use typed getters like `GetBool`, `GetString`.

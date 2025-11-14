@@ -6,15 +6,16 @@ import (
 )
 
 type serviceProvider struct {
-	Env             contracts.Env
-	ConfigProviders map[string]contracts.ConfigProvider
+    Env             contracts.Env
+    ConfigProviders map[string]contracts.ConfigProvider
 }
 
+// NewService 创建配置服务提供器，将 env 与各模块配置提供器注册到应用。
 func NewService(env contracts.Env, config map[string]contracts.ConfigProvider) contracts.ServiceProvider {
-	return &serviceProvider{
-		Env:             env,
-		ConfigProviders: config,
-	}
+    return &serviceProvider{
+        Env:             env,
+        ConfigProviders: config,
+    }
 }
 
 func (provider *serviceProvider) Stop() {
@@ -26,19 +27,19 @@ func (provider *serviceProvider) Start() error {
 }
 
 func (provider *serviceProvider) Register(application contracts.Application) {
-	logs.Debug = application.Debug()
+    logs.Debug = application.Debug()
 
-	application.Singleton("env", func() contracts.Env {
-		return provider.Env
-	})
+    application.Singleton("env", func() contracts.Env {
+        return provider.Env
+    })
 
-	singleton = New(provider.Env, provider.ConfigProviders)
+    singleton = New(provider.Env, provider.ConfigProviders)
 
-	for key, driver := range provider.ConfigProviders {
-		singleton.Set(key, driver(provider.Env))
-	}
+    for key, driver := range provider.ConfigProviders {
+        singleton.Set(key, driver(provider.Env))
+    }
 
-	application.Singleton("config", func() contracts.Config {
-		return singleton
-	})
+    application.Singleton("config", func() contracts.Config {
+        return singleton
+    })
 }

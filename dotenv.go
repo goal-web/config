@@ -9,16 +9,18 @@ import (
 )
 
 type dotEnv struct {
-	supports.BaseFields
-	providers []EnvProvider
-	fields    contracts.Fields
+    supports.BaseFields
+    providers []EnvProvider
+    fields    contracts.Fields
 }
 
+// NewDotEnv 创建基于 DotEnv（键值对）数据源的环境读取器。
+// 支持从本地文件或远程地址加载，OS 环境变量优先级最高。
 func NewDotEnv(providers ...EnvProvider) contracts.Env {
-	provider := &dotEnv{
-		BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
-		providers:  providers,
-	}
+    provider := &dotEnv{
+        BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+        providers:  providers,
+    }
 
 	provider.BaseFields.Provider = provider
 	return provider

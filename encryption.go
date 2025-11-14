@@ -2,18 +2,21 @@ package config
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports/commands"
 	"github.com/goal-web/supports/logs"
 	"github.com/goal-web/supports/utils"
-	"os"
 )
 
+// EncryptionCommand 返回用于加密/解密环境文件的 CLI 命令与处理器。
+// 支持指定驱动与密钥，不指定密钥时自动生成并在日志中输出。
 func EncryptionCommand() (contracts.Command, contracts.CommandHandlerProvider) {
-	return commands.Base("env {action:encrypt or decrypt} --{driver?} --{in?} --{out} --{key?} --{force?}", "env"),
-		func(app contracts.Application) contracts.CommandHandler {
-			return &encryptionCommand{app: app}
-		}
+    return commands.Base("env {action:encrypt or decrypt} --{driver?} --{in?} --{out} --{key?} --{force?}", "env"),
+        func(app contracts.Application) contracts.CommandHandler {
+            return &encryptionCommand{app: app}
+        }
 }
 
 type encryptionCommand struct {

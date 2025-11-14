@@ -8,16 +8,18 @@ import (
 )
 
 type yamlEnv struct {
-	supports.BaseFields
-	providers []EnvProvider
-	fields    contracts.Fields
+    supports.BaseFields
+    providers []EnvProvider
+    fields    contracts.Fields
 }
 
+// NewYaml 创建基于 YAML 数据源的环境读取器。
+// 多个数据源将按顺序合并，后者可覆盖前者同名键。
 func NewYaml(providers ...EnvProvider) contracts.Env {
-	provider := &yamlEnv{
-		BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
-		providers:  providers,
-	}
+    provider := &yamlEnv{
+        BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+        providers:  providers,
+    }
 
 	provider.BaseFields.Provider = provider
 	return provider

@@ -8,16 +8,18 @@ import (
 )
 
 type tomlEnv struct {
-	supports.BaseFields
-	providers []EnvProvider
-	fields    contracts.Fields
+    supports.BaseFields
+    providers []EnvProvider
+    fields    contracts.Fields
 }
 
+// NewToml 创建基于 TOML 数据源的环境读取器。
+// 多个数据源将按顺序合并，后者可覆盖前者同名键。
 func NewToml(providers ...EnvProvider) contracts.Env {
-	provider := &tomlEnv{
-		BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
-		providers:  providers,
-	}
+    provider := &tomlEnv{
+        BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+        providers:  providers,
+    }
 
 	provider.BaseFields.Provider = provider
 	return provider
