@@ -18,7 +18,7 @@ jobs:
         with:
           version: v2.6.2
           install-mode: goinstall
-          args: --out-format=colored-line-number
+          # use default output format for compatibility
       - name: Print versions
         run: |
           golangci-lint version || true
