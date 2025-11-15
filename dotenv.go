@@ -1,35 +1,32 @@
 package config
 
 import (
+	"os"
+
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports"
-	"github.com/goal-web/supports/utils"
 	"github.com/joho/godotenv"
-	"os"
 )
 
-type dotEnv[T any] struct {
-	supports.BaseFields
-	providers []EnvProvider
-	fields    contracts.Fields
+type dotEnv struct {
+    supports.BaseFields
+    providers []EnvProvider
+    fields    contracts.Fields
 }
 
+// NewDotEnv 创建基于 DotEnv（键值对）数据源的环境读取器。
+// 支持从本地文件或远程地址加载，OS 环境变量优先级最高。
 func NewDotEnv(providers ...EnvProvider) contracts.Env {
-	provider := &dotEnv[any]{
-		BaseFields: supports.BaseFields{OptionalGetter: func(key string, defaultValue any) any {
-			if value, ok := os.LookupEnv(key); ok {
-				return value
-			}
-			return defaultValue
-		}},
-		providers: providers,
-	}
+    provider := &dotEnv{
+        BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
+        providers:  providers,
+    }
 
-	provider.BaseFields.FieldsProvider = provider
+    provider.Provider = provider
 	return provider
 }
 
-func (env *dotEnv[T]) Fields() contracts.Fields {
+func (env *dotEnv) ToFields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}
@@ -37,7 +34,7 @@ func (env *dotEnv[T]) Fields() contracts.Fields {
 	return env.fields
 }
 
-func (env *dotEnv[T]) Load() contracts.Fields {
+func (env *dotEnv) Load() contracts.Fields {
 	var envs = make(contracts.Fields)
 	for _, provider := range env.providers {
 
@@ -46,8 +43,17 @@ func (env *dotEnv[T]) Load() contracts.Fields {
 			log.Error("tomlEnv.load: " + err.Error())
 			continue
 		}
-		fields, _ := utils.ToFields(strFields)
-		utils.Flatten(envs, fields, ".")
+		for key, value := range strFields {
+			key = ToEnvKey(key)
+			if _, exists := os.LookupEnv(key); exists {
+				continue
+			}
+			err = os.Setenv(key, value)
+			if err != nil {
+				log.Error("dotEnv.load: " + err.Error())
+				continue
+			}
+		}
 	}
 	return envs
 }

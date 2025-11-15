@@ -1,22 +1,22 @@
 package config
 
 import (
-	"github.com/BurntSushi/toml"
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports"
 	"github.com/goal-web/supports/utils"
+	"gopkg.in/yaml.v3"
 )
 
-type tomlEnv struct {
+type yamlEnv struct {
     supports.BaseFields
     providers []EnvProvider
     fields    contracts.Fields
 }
 
-// NewToml 创建基于 TOML 数据源的环境读取器。
+// NewYaml 创建基于 YAML 数据源的环境读取器。
 // 多个数据源将按顺序合并，后者可覆盖前者同名键。
-func NewToml(providers ...EnvProvider) contracts.Env {
-    provider := &tomlEnv{
+func NewYaml(providers ...EnvProvider) contracts.Env {
+    provider := &yamlEnv{
         BaseFields: supports.BaseFields{OptionalGetter: osEnvGetter},
         providers:  providers,
     }
@@ -24,7 +24,7 @@ func NewToml(providers ...EnvProvider) contracts.Env {
     provider.Provider = provider
 	return provider
 }
-func (env *tomlEnv) ToFields() contracts.Fields {
+func (env *yamlEnv) ToFields() contracts.Fields {
 	if env.fields == nil {
 		env.fields = env.Load()
 	}
@@ -32,14 +32,19 @@ func (env *tomlEnv) ToFields() contracts.Fields {
 	return env.fields
 }
 
-func (env *tomlEnv) Load() contracts.Fields {
+func (env *yamlEnv) Load() contracts.Fields {
 	var envs = make(contracts.Fields)
 	for _, provider := range env.providers {
 
-		var fields contracts.Fields
-		err := toml.Unmarshal(provider(), &fields)
+		var data = make(map[any]any)
+		err := yaml.Unmarshal(provider(), &data)
 		if err != nil {
-			log.Error("tomlEnv.load: " + err.Error())
+			log.Error("yamlEnv.load: " + err.Error())
+			continue
+		}
+		fields, err := utils.ToFields(data)
+		if err != nil {
+			log.Error("yamlEnv.load: " + err.Error())
 			continue
 		}
 		utils.Flatten(envs, fields, ".")
