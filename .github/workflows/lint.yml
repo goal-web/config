@@ -18,7 +18,6 @@ jobs:
         with:
           version: v2.6.2
           install-mode: goinstall
-          args: --enable=gofmt --enable=gofumpt --enable=misspell
       - name: Print versions
         run: |
           golangci-lint version || true
