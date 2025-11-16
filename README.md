@@ -429,8 +429,8 @@ fmt.Println(conf.GetString("app.env")) // prints: testing
 
 ## CI Insights
 
-- CI Status: ![CI](https://img.shields.io/github/actions/workflow/status/goal-web/config/ci.yml?branch=main&label=CI)
-- Lint Status: ![Lint](https://img.shields.io/github/actions/workflow/status/goal-web/config/lint.yml?branch=main&label=Lint)
+- CI Status: ![CI](https://img.shields.io/github/actions/workflow/status/goal-web/config/ci.yml?branch=master&label=CI)
+- Lint Status: ![Lint](https://img.shields.io/github/actions/workflow/status/goal-web/config/lint.yml?branch=master&label=Lint)
 - Commit Activity: ![Commit Activity](https://img.shields.io/github/commit-activity/m/goal-web/config)
 - Last Commit: ![Last Commit](https://img.shields.io/github/last-commit/goal-web/config)
 

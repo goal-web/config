@@ -6,6 +6,8 @@
 ![GitHub Stars](https://img.shields.io/github/stars/goal-web/config?style=social)
 ![Release](https://img.shields.io/github/v/release/goal-web/config?include_prereleases)
 ![Go Version](https://img.shields.io/badge/go-%3E=%201.25.0-00ADD8?logo=go)
+![CI](https://img.shields.io/github/actions/workflow/status/goal-web/config/ci.yml?branch=master&label=CI)
+![Lint](https://img.shields.io/github/actions/workflow/status/goal-web/config/lint.yml?branch=master&label=Lint)
 
 [Docs](https://pkg.go.dev/github.com/goal-web/config) · [Issues](https://github.com/goal-web/config/issues) · [Releases](https://github.com/goal-web/config/releases) · [CLI 加密](#cli-加密命令)
 
