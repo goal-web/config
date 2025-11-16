@@ -6,6 +6,9 @@
 ![GitHub Stars](https://img.shields.io/github/stars/goal-web/config?style=social)
 ![Release](https://img.shields.io/github/v/release/goal-web/config?include_prereleases)
 ![Go Version](https://img.shields.io/badge/go-%3E=%201.25.0-00ADD8?logo=go)
+![CI](https://img.shields.io/github/actions/workflow/status/goal-web/config/ci.yml?branch=master&label=CI)
+![Lint](https://img.shields.io/github/actions/workflow/status/goal-web/config/lint.yml?branch=master&label=Lint)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/goal-web/config)
 
 [Docs](https://pkg.go.dev/github.com/goal-web/config) · [Issues](https://github.com/goal-web/config/issues) · [Releases](https://github.com/goal-web/config/releases) · [CLI Encryption](#cli-encryption) · [中文文档](./README.cn.md)
 
@@ -423,6 +426,14 @@ fmt.Println(conf.GetString("app.env")) // prints: testing
 <a href="https://star-history.com/#goal-web/config&Date"><img src="https://api.star-history.com/svg?repos=goal-web/config&type=Date" alt="Star History Chart"/></a>
 
 ![Stargazers over time](https://starchart.cc/goal-web/config.svg)
+
+## CI Insights
+
+- CI Status: ![CI](https://img.shields.io/github/actions/workflow/status/goal-web/config/ci.yml?branch=main&label=CI)
+- Lint Status: ![Lint](https://img.shields.io/github/actions/workflow/status/goal-web/config/lint.yml?branch=main&label=Lint)
+- Commit Activity: ![Commit Activity](https://img.shields.io/github/commit-activity/m/goal-web/config)
+- Last Commit: ![Last Commit](https://img.shields.io/github/last-commit/goal-web/config)
+
 
 ## Contributing
 
